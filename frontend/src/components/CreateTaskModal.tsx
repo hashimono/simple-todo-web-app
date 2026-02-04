@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -19,6 +19,15 @@ interface CreateTaskModalProps {
 
 export function CreateTaskModal({ open, onClose, onSubmit, initialStatus }: CreateTaskModalProps) {
   const [title, setTitle] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    }
+  }, [open]);
 
   const handleClose = () => {
     setTitle('');
@@ -55,7 +64,7 @@ export function CreateTaskModal({ open, onClose, onSubmit, initialStatus }: Crea
       <DialogTitle>新しいタスクを作成</DialogTitle>
       <DialogContent>
         <TextField
-          autoFocus
+          inputRef={inputRef}
           margin="dense"
           label="タスク名"
           fullWidth

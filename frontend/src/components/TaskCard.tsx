@@ -13,15 +13,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import type { Task } from '../types';
+import type { Task, TaskStatus } from '../types';
 
 interface TaskCardProps {
   task: Task;
   onUpdate: (id: string, title: string) => void;
   onDelete: (id: string) => void;
+  onMoveToNextStatus: (id: string, currentStatus: TaskStatus) => void;
 }
 
-export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onUpdate, onDelete, onMoveToNextStatus }: TaskCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
 
@@ -60,12 +61,20 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     }
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isEditing) {
+      onMoveToNextStatus(task.id, task.status);
+    }
+  };
+
   return (
     <Card
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
+      onDoubleClick={handleDoubleClick}
       sx={{
         mb: 1,
         backgroundColor: '#f5f5f5',

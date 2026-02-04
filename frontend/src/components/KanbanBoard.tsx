@@ -65,6 +65,34 @@ export function KanbanBoard({ onOpenCreateModal }: KanbanBoardProps) {
     [setTasks]
   );
 
+  const handleMoveToNextStatus = useCallback(
+    async (id: string, currentStatus: TaskStatus) => {
+      try {
+        if (currentStatus === 'done') {
+          await deleteTask(id);
+          setTasks((prev) => prev.filter((t) => t.id !== id));
+        } else {
+          const nextStatus: TaskStatus = currentStatus === 'todo' ? 'doing' : 'done';
+          const targetColumnTasks = tasks
+            .filter((t) => t.status === nextStatus)
+            .sort((a, b) => a.order_index - b.order_index);
+          const newOrderIndex = targetColumnTasks.length;
+
+          setTasks((prev) =>
+            prev.map((t) =>
+              t.id === id ? { ...t, status: nextStatus, order_index: newOrderIndex } : t
+            )
+          );
+
+          await updateTask(id, { status: nextStatus, order_index: newOrderIndex });
+        }
+      } catch (error) {
+        console.error('Failed to move task to next status:', error);
+      }
+    },
+    [setTasks, tasks]
+  );
+
   const findTaskById = (id: string): Task | undefined => {
     return tasks.find((t) => t.id === id);
   };
@@ -198,6 +226,7 @@ export function KanbanBoard({ onOpenCreateModal }: KanbanBoardProps) {
             onUpdateTask={handleUpdateTask}
             onDeleteTask={handleDeleteTask}
             onOpenCreateModal={onOpenCreateModal}
+            onMoveToNextStatus={handleMoveToNextStatus}
           />
         ))}
       </Box>

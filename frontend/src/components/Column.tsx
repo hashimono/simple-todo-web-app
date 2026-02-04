@@ -15,9 +15,10 @@ interface ColumnProps {
   onUpdateTask: (id: string, title: string) => void;
   onDeleteTask: (id: string) => void;
   onOpenCreateModal?: (status: TaskStatus) => void;
+  onMoveToNextStatus: (id: string, currentStatus: TaskStatus) => void;
 }
 
-export function Column({ id, title, tasks, onUpdateTask, onDeleteTask, onOpenCreateModal }: ColumnProps) {
+export function Column({ id, title, tasks, onUpdateTask, onDeleteTask, onOpenCreateModal, onMoveToNextStatus }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   const showAddButton = id === 'todo' || id === 'doing';
@@ -93,6 +94,7 @@ export function Column({ id, title, tasks, onUpdateTask, onDeleteTask, onOpenCre
               task={task}
               onUpdate={onUpdateTask}
               onDelete={onDeleteTask}
+              onMoveToNextStatus={onMoveToNextStatus}
             />
           ))}
         </SortableContext>
