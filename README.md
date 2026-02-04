@@ -1,73 +1,88 @@
-# React + TypeScript + Vite
+# Simple Todo Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple personal Todo management Web application for localhost usage only.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Frontend
+- React + TypeScript (Vite)
+- MUI (dark theme)
+- Jotai for state management
+- dnd-kit for drag & drop
 
-## React Compiler
+### Backend
+- Node.js + Express
+- PostgreSQL
+- node-postgres (`pg`)
+- Raw SQL only
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Infrastructure
+- Docker Compose for PostgreSQL
+- localhost only
+- CORS enabled
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Kanban board with 3 columns (Todo, Doing, Done)
+- Drag & drop reordering within and between columns
+- Create, edit, and delete tasks
+- Archive toggle (hide/show completed tasks)
+- Keyboard shortcut: Cmd+K to open task creation modal
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Startup
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+```bash
+# Start PostgreSQL
+docker compose up -d
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
+
+# Run backend (in one terminal)
+cd backend && npm run dev
+
+# Run frontend (in another terminal)
+cd frontend && npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The frontend will be available at http://localhost:5173
+The backend API will be available at http://localhost:3001
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## API Endpoints
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `GET /tasks` - Get all tasks
+- `POST /tasks` - Create a new task
+- `PUT /tasks/:id` - Update a task
+- `DELETE /tasks/:id` - Delete a task
+- `PATCH /tasks/reorder` - Reorder tasks
+
+## Database Schema
+
+```sql
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'doing', 'done')),
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## Keyboard Shortcuts
+
+- `Cmd + K` - Open task creation modal
+- `Cmd + Enter` - Submit task (in modal)
+- `Esc` - Cancel/close modal
+
+## Development
+
+```bash
+# Run backend tests
+cd backend && npm test
+
+# Run linting
+cd backend && npm run lint
+cd frontend && npm run lint
 ```
