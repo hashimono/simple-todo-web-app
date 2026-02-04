@@ -9,8 +9,7 @@ import {
   Tooltip,
   CircularProgress,
   Alert,
-  Switch,
-  FormControlLabel,
+  Button,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { KanbanBoard } from './components/KanbanBoard';
@@ -20,16 +19,17 @@ import {
   loadingAtom,
   errorAtom,
   createModalOpenAtom,
-  showArchivedAtom,
+  createTaskInitialStatusAtom,
 } from './atoms';
-import { fetchTasks, createTask } from './api';
+import { fetchTasks, createTask, archiveDoneTasks } from './api';
+import type { TaskStatus } from './types';
 
 function App() {
   const [tasks, setTasks] = useAtom(tasksAtom);
   const [loading, setLoading] = useAtom(loadingAtom);
   const [error, setError] = useAtom(errorAtom);
   const [modalOpen, setModalOpen] = useAtom(createModalOpenAtom);
-  const [showArchived, setShowArchived] = useAtom(showArchivedAtom);
+  const [initialStatus, setInitialStatus] = useAtom(createTaskInitialStatusAtom);
   const setTasksAtom = useSetAtom(tasksAtom);
 
   // Load tasks on mount
@@ -55,17 +55,18 @@ function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
+        setInitialStatus('todo');
         setModalOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setModalOpen]);
+  }, [setModalOpen, setInitialStatus]);
 
   const handleCreateTask = useCallback(
-    async (title: string) => {
+    async (title: string, status: TaskStatus) => {
       try {
-        const newTask = await createTask(title);
+        const newTask = await createTask(title, status);
         setTasksAtom((prev) => [...prev, newTask]);
       } catch (err) {
         console.error('Failed to create task:', err);
@@ -75,6 +76,30 @@ function App() {
     [setTasksAtom, setError]
   );
 
+  const handleArchiveDoneTasks = useCallback(async () => {
+    try {
+      await archiveDoneTasks();
+      setTasksAtom((prev) => prev.filter((t) => t.status !== 'done'));
+    } catch (err) {
+      console.error('Failed to archive tasks:', err);
+      setError('タスクのアーカイブに失敗しました');
+    }
+  }, [setTasksAtom, setError]);
+
+  const handleOpenModal = useCallback(
+    (status: TaskStatus) => {
+      setInitialStatus(status);
+      setModalOpen(true);
+    },
+    [setInitialStatus, setModalOpen]
+  );
+
+  const handleCloseModal = useCallback(() => {
+    setModalOpen(false);
+  }, [setModalOpen]);
+
+  const hasDoneTasks = tasks.some((t) => t.status === 'done');
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
       <AppBar position="static" color="default" elevation={1}>
@@ -82,21 +107,19 @@ function App() {
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
             Todo App
           </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showArchived}
-                onChange={(e) => setShowArchived(e.target.checked)}
-                size="small"
-              />
-            }
-            label="完了タスクを表示"
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleArchiveDoneTasks}
+            disabled={!hasDoneTasks}
             sx={{ mr: 2 }}
-          />
+          >
+            完了タスクをアーカイブする
+          </Button>
           <Tooltip title="新しいタスクを作成 (Cmd+K)">
             <IconButton
               color="primary"
-              onClick={() => setModalOpen(true)}
+              onClick={() => handleOpenModal('todo')}
               sx={{ mr: 1 }}
             >
               <AddIcon />
@@ -126,12 +149,13 @@ function App() {
         </Box>
       )}
 
-      {!loading && <KanbanBoard />}
+      {!loading && <KanbanBoard onOpenCreateModal={handleOpenModal} />}
 
       <CreateTaskModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         onSubmit={handleCreateTask}
+        initialStatus={initialStatus}
       />
     </Box>
   );

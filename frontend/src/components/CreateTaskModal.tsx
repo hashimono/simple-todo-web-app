@@ -8,14 +8,16 @@ import {
   Button,
   Typography,
 } from '@mui/material';
+import type { TaskStatus } from '../types';
 
 interface CreateTaskModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (title: string) => void;
+  onSubmit: (title: string, status: TaskStatus) => void;
+  initialStatus: TaskStatus;
 }
 
-export function CreateTaskModal({ open, onClose, onSubmit }: CreateTaskModalProps) {
+export function CreateTaskModal({ open, onClose, onSubmit, initialStatus }: CreateTaskModalProps) {
   const [title, setTitle] = useState('');
 
   const handleClose = () => {
@@ -25,7 +27,7 @@ export function CreateTaskModal({ open, onClose, onSubmit }: CreateTaskModalProp
 
   const handleSubmit = () => {
     if (title.trim()) {
-      onSubmit(title.trim());
+      onSubmit(title.trim(), initialStatus);
       handleClose();
     }
   };
@@ -45,6 +47,7 @@ export function CreateTaskModal({ open, onClose, onSubmit }: CreateTaskModalProp
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
+      transitionDuration={0}
       PaperProps={{
         sx: { backgroundColor: 'background.paper' },
       }}

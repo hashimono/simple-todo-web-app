@@ -3,7 +3,8 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Paper, Typography, IconButton } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { TaskCard } from './TaskCard';
 import type { Task, TaskStatus } from '../types';
 
@@ -13,10 +14,13 @@ interface ColumnProps {
   tasks: Task[];
   onUpdateTask: (id: string, title: string) => void;
   onDeleteTask: (id: string) => void;
+  onOpenCreateModal?: (status: TaskStatus) => void;
 }
 
-export function Column({ id, title, tasks, onUpdateTask, onDeleteTask }: ColumnProps) {
+export function Column({ id, title, tasks, onUpdateTask, onDeleteTask, onOpenCreateModal }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
+
+  const showAddButton = id === 'todo' || id === 'doing';
 
   return (
     <Paper
@@ -32,26 +36,44 @@ export function Column({ id, title, tasks, onUpdateTask, onDeleteTask }: ColumnP
         transition: 'background-color 0.2s ease',
       }}
     >
-      <Typography
-        variant="h6"
+      <Box
         sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           mb: 2,
-          fontWeight: 600,
-          color: 'text.primary',
           borderBottom: '2px solid',
           borderColor: 'primary.main',
           pb: 1,
         }}
       >
-        {title}
         <Typography
-          component="span"
-          variant="body2"
-          sx={{ ml: 1, color: 'text.secondary' }}
+          variant="h6"
+          sx={{
+            fontWeight: 600,
+            color: 'text.primary',
+          }}
         >
-          ({tasks.length})
+          {title}
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{ ml: 1, color: 'text.secondary' }}
+          >
+            ({tasks.length})
+          </Typography>
         </Typography>
-      </Typography>
+        {showAddButton && onOpenCreateModal && (
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={() => onOpenCreateModal(id)}
+            sx={{ ml: 1 }}
+          >
+            <AddIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
 
       <Box
         ref={setNodeRef}

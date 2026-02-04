@@ -13,7 +13,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import type { Task } from '../types';
 
 interface TaskCardProps {
@@ -65,30 +64,22 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     <Card
       ref={setNodeRef}
       style={style}
+      {...attributes}
+      {...listeners}
       sx={{
         mb: 1,
-        backgroundColor: 'background.paper',
+        backgroundColor: '#f5f5f5',
+        cursor: isEditing ? 'default' : 'grab',
         '&:hover': {
-          backgroundColor: 'action.hover',
+          backgroundColor: '#eeeeee',
+        },
+        '&:active': {
+          cursor: isEditing ? 'default' : 'grabbing',
         },
       }}
     >
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            {...attributes}
-            {...listeners}
-            sx={{
-              cursor: 'grab',
-              display: 'flex',
-              alignItems: 'center',
-              color: 'text.secondary',
-              '&:active': { cursor: 'grabbing' },
-            }}
-          >
-            <DragIndicatorIcon fontSize="small" />
-          </Box>
-
           {isEditing ? (
             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <TextField
@@ -98,7 +89,12 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                 size="small"
                 fullWidth
                 autoFocus
-                sx={{ '& .MuiInputBase-input': { py: 0.5 } }}
+                sx={{
+                  '& .MuiInputBase-input': { py: 0.5, color: '#000' },
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                  },
+                }}
               />
               <IconButton size="small" onClick={handleSave} color="primary">
                 <CheckIcon fontSize="small" />
@@ -110,25 +106,33 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
           ) : (
             <>
               <Typography
-                variant="body2"
+                variant="body1"
                 sx={{
                   flex: 1,
                   wordBreak: 'break-word',
+                  color: '#000',
+                  fontSize: '1rem',
                 }}
               >
                 {task.title}
               </Typography>
               <IconButton
                 size="small"
-                onClick={() => setIsEditing(true)}
-                sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
+                sx={{ opacity: 0.7, '&:hover': { opacity: 1 }, color: '#666' }}
               >
                 <EditIcon fontSize="small" />
               </IconButton>
               <IconButton
                 size="small"
-                onClick={() => onDelete(task.id)}
-                sx={{ opacity: 0.7, '&:hover': { opacity: 1, color: 'error.main' } }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(task.id);
+                }}
+                sx={{ opacity: 0.7, '&:hover': { opacity: 1, color: 'error.main' }, color: '#666' }}
               >
                 <DeleteIcon fontSize="small" />
               </IconButton>

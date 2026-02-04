@@ -18,7 +18,7 @@ export interface Column {
 }
 
 export const COLUMNS: Column[] = [
-  { id: 'todo', title: 'Todo' },
-  { id: 'doing', title: 'Doing' },
-  { id: 'done', title: 'Done' },
+  { id: 'todo', title: 'ToDo' },
+  { id: 'doing', title: '対応中' },
+  { id: 'done', title: '完了' },
 ];

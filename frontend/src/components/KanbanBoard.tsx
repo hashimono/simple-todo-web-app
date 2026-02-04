@@ -16,7 +16,11 @@ import { tasksAtom, tasksByStatusAtom } from '../atoms';
 import { updateTask, deleteTask, reorderTasks } from '../api';
 import { COLUMNS, type Task, type TaskStatus } from '../types';
 
-export function KanbanBoard() {
+interface KanbanBoardProps {
+  onOpenCreateModal?: (status: TaskStatus) => void;
+}
+
+export function KanbanBoard({ onOpenCreateModal }: KanbanBoardProps) {
   const [tasks, setTasks] = useAtom(tasksAtom);
   const tasksByStatus = useAtomValue(tasksByStatusAtom);
 
@@ -31,15 +35,22 @@ export function KanbanBoard() {
   const handleUpdateTask = useCallback(
     async (id: string, title: string) => {
       try {
+        const currentTask = tasks.find((t) => t.id === id);
+        if (!currentTask) return;
+
         const updated = await updateTask(id, { title });
         setTasks((prev) =>
-          prev.map((t) => (t.id === id ? updated : t))
+          prev.map((t) =>
+            t.id === id
+              ? { ...updated, status: currentTask.status, order_index: currentTask.order_index }
+              : t
+          )
         );
       } catch (error) {
         console.error('Failed to update task:', error);
       }
     },
-    [setTasks]
+    [setTasks, tasks]
   );
 
   const handleDeleteTask = useCallback(
@@ -186,6 +197,7 @@ export function KanbanBoard() {
             tasks={tasksByStatus[column.id]}
             onUpdateTask={handleUpdateTask}
             onDeleteTask={handleDeleteTask}
+            onOpenCreateModal={onOpenCreateModal}
           />
         ))}
       </Box>

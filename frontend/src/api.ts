@@ -70,3 +70,14 @@ export async function reorderTasks(
   }
   return response.json();
 }
+
+// Archive (delete) all done tasks
+export async function archiveDoneTasks(): Promise<{ deleted: number }> {
+  const response = await fetch(`${API_BASE}/tasks/archive`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to archive tasks');
+  }
+  return response.json();
+}

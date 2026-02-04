@@ -108,6 +108,21 @@ router.put('/:id', async (req: Request<{ id: string }, object, UpdateTaskRequest
   }
 });
 
+// POST /tasks/archive - Delete all done tasks
+router.post('/archive', async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      'DELETE FROM tasks WHERE status = $1 RETURNING id',
+      ['done']
+    );
+
+    res.json({ deleted: result.rowCount });
+  } catch (error) {
+    console.error('Error archiving tasks:', error);
+    res.status(500).json({ error: 'Failed to archive tasks' });
+  }
+});
+
 // DELETE /tasks/:id - Delete a task
 router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
